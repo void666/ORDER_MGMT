@@ -4,6 +4,13 @@ var ORDER_AGGREGATION = require('../models/order.aggregation');
 var ORDER_ENUMS = require('../enums/order.enum');
 var staticOrders =  require('./static.orders');
 
+/**
+ * Takes in the searchParams and builds a query based on the params
+ * @param searchParams
+ * @return {ready query}
+ * @private
+ */
+
 var _buildQuery = function (searchParams) {
     var query = {};
     var searchParamKeys = _.keys(searchParams);
@@ -13,6 +20,13 @@ var _buildQuery = function (searchParams) {
     });
     return query;
 };
+
+/**
+ * builds CSV rows to orders (db compatible objects)
+ * @param orderAttributes
+ * @return {{order_id: *, company_name: *, customer_address: *, order_item: *}}
+ * @private
+ */
 
 var _buildOrderObject = function (orderAttributes) {
     var orderObject = {
@@ -24,6 +38,13 @@ var _buildOrderObject = function (orderAttributes) {
     return orderObject;
 };
 
+/**
+ * takes in the csv processed orders and performs bulk insert
+ * @param processedOrdersArray
+ * @return {*}
+ *
+ */
+
 var addBulkOrder = function (processedOrdersArray) {
     var ordersObjects = [];
     _.each(processedOrdersArray, function (order) {
@@ -31,6 +52,12 @@ var addBulkOrder = function (processedOrdersArray) {
     });
     return Order.insertMany(ordersObjects);
 };
+
+/**
+ * formats orderJson into valid a Order db object, inserts in db.
+ * @param orderJson
+ * @return {*}
+ */
 
 var addOrder = function (orderJson) {
     var orderObject = {
@@ -44,9 +71,20 @@ var addOrder = function (orderJson) {
 };
 
 
+/**
+ * Takes order ID and deletes the order, if found.
+ * @param orderId
+ * @return {*|Promise|Array|{index: number, input: string}}
+ */
 var deleteOrder = function (orderId) {
     return Order.remove({order_id: orderId}).exec();
 };
+
+/**
+ * returns list of Attribute Values vs Occurrence Frequency
+ * @param param
+ * @return {}
+ */
 
 var listOrderItemVsFrequency = function (param) {
     return Order.aggregate(ORDER_AGGREGATION.aggsListAttributeVsFrequency(param))
@@ -59,6 +97,12 @@ var listOrderItemVsFrequency = function (param) {
         });
 };
 
+/**
+ * Builds search query based on searchParams and returns the list of orders.
+ * @param searchParams
+ * @return {Promise}
+ */
+
 var searchOrder = function (searchParams) {
     var query = _buildQuery(searchParams);
     return Order.find(query)
@@ -67,9 +111,21 @@ var searchOrder = function (searchParams) {
         .lean().exec();
 };
 
+
+//TODO : To be used for UI filter generation
+/**
+ * For Filter values purpose. Provides the list of distinct Values for the attribute passed.
+ * @param attribute
+ * @return {}
+ */
+
 var distinct = function (attribute) {
     return Order.find().distinct(attribute).exec();
 };
+
+/**
+ * Checks if there are any orders in the DB. If not, generates from static.data.
+ */
 
 var initOrder = function () {
     return Order.find({}).lean().exec()
@@ -88,7 +144,7 @@ module.exports = {
     addOrder: addOrder,
     deleteOrder: deleteOrder,
     searchOrder: searchOrder,
-    listOrderItemVsFrequency: listOrderItemVsFrequency,
+    listOrderAttributeVsFrequency: listOrderItemVsFrequency,
     distinct: distinct,
     initOrder: initOrder
 };

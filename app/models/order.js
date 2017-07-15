@@ -1,5 +1,9 @@
 var mongoose = require('mongoose');
 
+/**
+ * Order Schema
+ */
+
 var OrderSchema ={
     order_id: {type: String, default: '', required : true},
     customer_address : {type: String, default: '', required : true},
