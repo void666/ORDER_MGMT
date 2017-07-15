@@ -16,3 +16,4 @@ $ export NODE_ENV=development
 $ nodemon server.js
 
 ```
+`visit http://localhost:3000`
